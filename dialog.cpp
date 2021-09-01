@@ -325,10 +325,7 @@ void Dialog::ProcessScatteredGraphData(QByteArray& data)
 
 void Dialog::ProcessMotionGraphData(QByteArray &data)
 {
-   // qDebug() << "ProcessMotionGraphData [" << data << "]";
     ASGraph* p = m_graphs[0];
-    /*int y = data.mid(1).trimmed().toInt();
-    p->addScatteredPoint(y, Qt::red);*/
     for (int i = 1; i < data.length(); i+=4)
     {
         int y = data.mid(i, 4).trimmed().toUpper().toInt(nullptr, 16);
