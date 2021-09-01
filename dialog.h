@@ -1,8 +1,6 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include "udpconn.h"
-#include "asgraph.h"
 #include <QDialog>
 #include <QKeyEvent>
 #include <QMutex>
@@ -10,6 +8,10 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QStringList>
+
+#include "udpconn.h"
+#include "asgraph.h"
+#include "kv58firmwaredlg.h"
 
 namespace Ui {
 class Dialog;

@@ -363,28 +363,6 @@ QColor Dialog::color(int index)
 
 void Dialog::processData()
 {
-    /*while (m_data.length())
-    {
-        if (m_data.contains('\n'))
-        {
-            QByteArray msg = m_data.mid(0, m_data.indexOf('\n'));
-            m_data = m_data.mid(m_data.indexOf('\n') + 1);
-            msg = msg.trimmed();
-            if (msg.length() > 0)
-            {
-                if (msg.startsWith('R'))
-                    ProcessMotionGraphData(msg);
-                else
-                    ui->lvTexts->addItem(msg);
-            }
-            if (m_bScroll)
-                ui->lvTexts->scrollToBottom();
-        }
-        else
-            break;
-    }*/
-
-    //PRINTF("[%s]<%s>", data.constData(), data.toHex(' ').constData());
     if (m_data.contains('\r'))
     {
         //qDebug() << ">" << data << "<";
@@ -434,6 +412,7 @@ void Dialog::on_btGraph3_clicked()
 
 void Dialog::on_btKV58FirmwareDownload_clicked()
 {
-
+    KV58FirmwareDlg dlg;
+    dlg.exec();
 }
 

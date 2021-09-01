@@ -35,3 +35,9 @@ KV58FirmwareDlg::~KV58FirmwareDlg()
 {
     delete ui;
 }
+
+void KV58FirmwareDlg::on_pbClose_clicked()
+{
+    accept();
+}
+

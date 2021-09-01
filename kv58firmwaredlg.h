@@ -38,6 +38,9 @@ public:
     explicit KV58FirmwareDlg(QWidget *parent = nullptr);
     ~KV58FirmwareDlg();
 
+private slots:
+    void on_pbClose_clicked();
+
 private:
     Ui::KV58FirmwareDlg *ui;
 };
