@@ -24,16 +24,27 @@
 #include "kv58firmwaredlg.h"
 #include "ui_kv58firmwaredlg.h"
 
-KV58FirmwareDlg::KV58FirmwareDlg(QWidget *parent) :
+KV58FirmwareDlg::KV58FirmwareDlg(QSerialPort* com, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::KV58FirmwareDlg)
+    ui(new Ui::KV58FirmwareDlg),
+    m_com(com)
 {
     ui->setupUi(this);
+    QSettings s("jjterm.ini", QSettings::IniFormat);
+    ui->lbPath->setText(s.value("FirmwarePath").toString());
+    ui->lbPath->setToolTip(s.value("FirmwarePath").toString());
 }
 
 KV58FirmwareDlg::~KV58FirmwareDlg()
 {
+    QSettings s("jjterm.ini", QSettings::IniFormat);
+    s.setValue("FirmwarePath", ui->lbPath->text());
     delete ui;
+}
+
+void KV58FirmwareDlg::readReady(const QByteArray data)
+{
+    ui->lvCommText->insertPlainText(data);
 }
 
 void KV58FirmwareDlg::on_pbClose_clicked()
@@ -41,3 +52,25 @@ void KV58FirmwareDlg::on_pbClose_clicked()
     accept();
 }
 
+void KV58FirmwareDlg::on_pbDownload_clicked()
+{
+
+}
+
+
+void KV58FirmwareDlg::on_pbClearCommList_clicked()
+{
+
+}
+
+
+void KV58FirmwareDlg::on_pbStopScrollCommText_clicked()
+{
+
+}
+
+
+void KV58FirmwareDlg::on_pbFirmwarePath_clicked()
+{
+
+}

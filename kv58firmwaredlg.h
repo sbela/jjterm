@@ -25,6 +25,9 @@
 #define KV58FIRMWAREDLG_H
 
 #include <QDialog>
+#include <QSerialPort>
+#include <QPointer>
+#include <QSettings>
 
 namespace Ui {
     class KV58FirmwareDlg;
@@ -35,14 +38,23 @@ class KV58FirmwareDlg : public QDialog
     Q_OBJECT
 
 public:
-    explicit KV58FirmwareDlg(QWidget *parent = nullptr);
+    explicit KV58FirmwareDlg(QSerialPort* com, QWidget *parent = nullptr);
     ~KV58FirmwareDlg();
-
+    void readReady(const QByteArray data);
 private slots:
     void on_pbClose_clicked();
 
+    void on_pbDownload_clicked();
+
+    void on_pbClearCommList_clicked();
+
+    void on_pbStopScrollCommText_clicked();
+
+    void on_pbFirmwarePath_clicked();
+
 private:
     Ui::KV58FirmwareDlg *ui;
+    QPointer<QSerialPort> m_com;
 };
 
 #endif // KV58FIRMWAREDLG_H

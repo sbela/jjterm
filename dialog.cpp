@@ -20,19 +20,19 @@ Dialog::Dialog(QWidget *parent) :
         if (port_name == port.portName())
             ui->cbPorts->setCurrentIndex(ui->cbPorts->count() - 1);
     }
-    m_serial = new QSerialPort(this);
     m_bScroll = true;
-    connect(m_serial, SIGNAL(errorOccurred(QSerialPort::SerialPortError)), this, SLOT(errorOccurred(QSerialPort::SerialPortError)));
-    connect(m_serial, SIGNAL(readyRead()), this, SLOT(readyRead()));
+    connect(m_serial.data(), SIGNAL(errorOccurred(QSerialPort::SerialPortError)), this, SLOT(errorOccurred(QSerialPort::SerialPortError)));
+    connect(m_serial.data(), SIGNAL(readyRead()), this, SLOT(readyRead()));
     connect(&m_con, &UDPConn::dbgMsgReceived, this, &Dialog::dbgMsgReceived);
     connect(ui->lvTexts, &Console::getData, this, &Dialog::writeData);
     m_graphs.append(new ASGraph(0, this));
     m_graphs.append(new ASGraph(1, this));
     m_graphs.append(new ASGraph(2, this));
     ui->leIP->setText(s.value("ip", "192.168.100.100").toString());
-    ui->rbSerial->setChecked(s.value("Serial", false).toBool());
-    ui->rbTCPIP->setChecked(s.value("Serial", true).toBool());
+    bool isSerialChecked = s.value("Serial", false).toBool();
+    isSerialChecked ? ui->rbSerial->setChecked(isSerialChecked) : ui->rbTCPIP->setChecked(not isSerialChecked);
     restoreGeometry(s.value("geometry").toByteArray());
+    ui->btKV58FirmwareDownload->setVisible(false);
 }
 
 Dialog::~Dialog()
@@ -111,6 +111,12 @@ void Dialog::errorOccurred(QSerialPort::SerialPortError error)
 void Dialog::readyRead()
 {
     QMutexLocker lock(&m_mutex);
+    if (m_firmware->isVisible())
+    {
+        m_firmware->readReady(std::move(m_serial->readAll()));
+        return;
+    }
+
     QByteArray data = m_serial->readAll();
     m_data.append(data);
 
@@ -197,6 +203,7 @@ void Dialog::on_btOpen_clicked()
                 ui->cbPorts->setEnabled(false);
                 ui->rbSerial->setEnabled(false);
                 ui->rbTCPIP->setEnabled(false);
+                ui->btKV58FirmwareDownload->setVisible(true);
             }
             else
             {
@@ -206,6 +213,7 @@ void Dialog::on_btOpen_clicked()
         }
         else
         {
+            ui->btKV58FirmwareDownload->setVisible(false);
             ui->rbSerial->setEnabled(true);
             ui->rbTCPIP->setEnabled(true);
             ui->cbPorts->setEnabled(true);
@@ -412,7 +420,5 @@ void Dialog::on_btGraph3_clicked()
 
 void Dialog::on_btKV58FirmwareDownload_clicked()
 {
-    KV58FirmwareDlg dlg;
-    dlg.exec();
+    m_firmware->setVisible(true);
 }
-

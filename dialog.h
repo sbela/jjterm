@@ -54,10 +54,11 @@ private slots:
 
 private:
     Ui::Dialog *ui;
-    QSerialPort *m_serial;
+    QScopedPointer<QSerialPort> m_serial { new QSerialPort(this) };
+    QScopedPointer<KV58FirmwareDlg> m_firmware { new KV58FirmwareDlg(m_serial.data(), this) };
     QByteArray m_data;
     bool m_bScroll;
-    QList<ASGraph*> m_graphs;
+    QVector<ASGraph*> m_graphs;
     void ProcessEditData(QByteArray& data);
     void ProcessGraphData(QByteArray& data);
     void ProcessScatteredGraphData(QByteArray& data);

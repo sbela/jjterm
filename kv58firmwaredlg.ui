@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>KV58 Firmware Download</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/terminal16.png</normaloff>:/terminal16.png</iconset>
   </property>
   <widget class="QPushButton" name="pbFirmwarePath">
    <property name="geometry">
@@ -65,22 +69,6 @@
     <string>Download</string>
    </property>
   </widget>
-  <widget class="QListView" name="lvCommText">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>70</y>
-     <width>621</width>
-     <height>281</height>
-    </rect>
-   </property>
-   <property name="editTriggers">
-    <set>QAbstractItemView::NoEditTriggers</set>
-   </property>
-   <property name="selectionBehavior">
-    <enum>QAbstractItemView::SelectRows</enum>
-   </property>
-  </widget>
   <widget class="QPushButton" name="pbStopScrollCommText">
    <property name="geometry">
     <rect>
@@ -120,7 +108,32 @@
     <string>Close</string>
    </property>
   </widget>
+  <widget class="Console" name="lvCommText">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>70</y>
+     <width>621</width>
+     <height>281</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>JetBrains Mono</family>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </widget>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>Console</class>
+   <extends>QPlainTextEdit</extends>
+   <header>console.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -694,8 +694,8 @@
         <widget class="Console" name="lvTexts">
          <property name="font">
           <font>
-           <family>Fixedsys Excelsior 3.01-L2</family>
-           <pointsize>12</pointsize>
+           <family>JetBrains Mono NL</family>
+           <pointsize>10</pointsize>
           </font>
          </property>
         </widget>
