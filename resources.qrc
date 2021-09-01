@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>terminal16.png</file>
+        <file>terminal32.png</file>
+    </qresource>
+</RCC>
