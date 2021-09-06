@@ -248,7 +248,8 @@ void UDPConn::updateIPList()
 {
     m_ipList.clear();
     const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
-    for (const auto &address: QNetworkInterface::allAddresses())
+    const auto allAddresses = QNetworkInterface::allAddresses();
+    for (const auto &address: allAddresses)
     {
         if (address.protocol() == QAbstractSocket::IPv4Protocol && address != localhost)
         {

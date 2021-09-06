@@ -695,7 +695,7 @@
          <property name="font">
           <font>
            <family>JetBrains Mono NL</family>
-           <pointsize>10</pointsize>
+           <pointsize>12</pointsize>
           </font>
          </property>
         </widget>

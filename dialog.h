@@ -57,7 +57,7 @@ private:
     QScopedPointer<QSerialPort> m_serial { new QSerialPort(this) };
     QScopedPointer<KV58FirmwareDlg> m_firmware { new KV58FirmwareDlg(m_serial.data(), this) };
     QByteArray m_data;
-    bool m_bScroll;
+    bool m_bScroll { true };
     QVector<ASGraph*> m_graphs;
     void ProcessEditData(QByteArray& data);
     void ProcessGraphData(QByteArray& data);

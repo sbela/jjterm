@@ -44,7 +44,12 @@ KV58FirmwareDlg::~KV58FirmwareDlg()
 
 void KV58FirmwareDlg::readReady(const QByteArray data)
 {
+    if (data.contains("FIRMWARE-START:"))
+    {
+
+    }
     ui->lvCommText->insertPlainText(data);
+    if (m_bScroll) ui->lvCommText->scrollToBottom();
 }
 
 void KV58FirmwareDlg::on_pbClose_clicked()
@@ -54,23 +59,61 @@ void KV58FirmwareDlg::on_pbClose_clicked()
 
 void KV58FirmwareDlg::on_pbDownload_clicked()
 {
-
+    if (QFile::exists(ui->lbPath->text()))
+    {
+        QFile file(ui->lbPath->text());
+        if (file.open(QIODevice::ReadOnly))
+        {
+            QByteArray bin = file.readAll();
+            if (m_com)
+            {
+                int index = 0, len = 8;
+                m_com->write(QString("firm:%1").arg(bin.length()).toUtf8());
+                m_com->waitForBytesWritten();
+                while (index < bin.length())
+                {
+                    m_com->write(bin.mid(index, len));
+                    m_com->waitForBytesWritten();
+                    index += len;
+                }
+            }
+        }
+    }
 }
-
 
 void KV58FirmwareDlg::on_pbClearCommList_clicked()
 {
-
+    ui->lvCommText->clear();
 }
-
 
 void KV58FirmwareDlg::on_pbStopScrollCommText_clicked()
 {
-
+    if (ui->pbStopScrollCommText->text() == "Stop scroll")
+    {
+        ui->pbStopScrollCommText->setText("Start scroll");
+        m_bScroll = false;
+    }
+    else
+    {
+        ui->pbStopScrollCommText->setText("Stop scroll");
+        m_bScroll = true;
+    }
 }
-
 
 void KV58FirmwareDlg::on_pbFirmwarePath_clicked()
 {
 
 }
+
+void KV58FirmwareDlg::on_pbReboot_clicked()
+{
+    if (m_com)
+        m_com->write(QByteArray("bootldr:\n"));
+}
+
+void KV58FirmwareDlg::on_pbBootApp_clicked()
+{
+    if (m_com)
+        m_com->write(QByteArray("bootapp:\n"));
+}
+

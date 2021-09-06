@@ -52,9 +52,14 @@ private slots:
 
     void on_pbFirmwarePath_clicked();
 
+    void on_pbReboot_clicked();
+
+    void on_pbBootApp_clicked();
+
 private:
     Ui::KV58FirmwareDlg *ui;
     QPointer<QSerialPort> m_com;
+    bool m_bScroll { true };
 };
 
 #endif // KV58FIRMWAREDLG_H
