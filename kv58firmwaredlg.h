@@ -56,6 +56,8 @@ private slots:
 
     void on_pbBootApp_clicked();
 
+    void on_pbVersion_clicked();
+
 private:
     Ui::KV58FirmwareDlg *ui;
     QPointer<QSerialPort> m_com;

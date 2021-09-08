@@ -163,6 +163,19 @@
     <string>Boot App</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="pbVersion">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>360</y>
+     <width>111</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Version</string>
+   </property>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
