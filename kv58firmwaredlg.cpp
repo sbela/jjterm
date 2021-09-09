@@ -105,6 +105,7 @@ void KV58FirmwareDlg::readReady(const QByteArray data)
         m_data.append(data);
         if (m_data.contains("FIRMWARE-START:"))
         {
+            ui->lvCommText->insertPlainText(m_data);
             m_data.clear();
             QMutexLocker m(&m_firmwareDownloadLock);
             ui->prDownload->setValue(0);
