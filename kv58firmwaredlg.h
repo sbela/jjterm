@@ -62,6 +62,9 @@ private:
     Ui::KV58FirmwareDlg *ui;
     QPointer<QSerialPort> m_com;
     bool m_bScroll { true };
+
+    inline void Send(const char* msg);
+    inline void Send(const QString &msg);
 };
 
 #endif // KV58FIRMWAREDLG_H

@@ -107,20 +107,29 @@ void KV58FirmwareDlg::on_pbFirmwarePath_clicked()
 
 void KV58FirmwareDlg::on_pbReboot_clicked()
 {
-    if (m_com)
-        m_com->write(QByteArray("bootldr\n"));
+    Send("bootldr\n");
 }
 
 void KV58FirmwareDlg::on_pbBootApp_clicked()
 {
-    if (m_com)
-        m_com->write(QByteArray("bootapp\n"));
+    Send("bootapp\n");
 }
 
 
 void KV58FirmwareDlg::on_pbVersion_clicked()
 {
+    Send("ver\n");
+}
+
+void KV58FirmwareDlg::Send(const char *msg)
+{
     if (m_com)
-        m_com->write(QByteArray("ver\n"));
+        m_com->write(QByteArray(msg));
+}
+
+void KV58FirmwareDlg::Send(const QString &msg)
+{
+    if (m_com)
+        m_com->write(msg.toUtf8());
 }
 
