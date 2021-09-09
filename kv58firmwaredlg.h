@@ -28,6 +28,11 @@
 #include <QSerialPort>
 #include <QPointer>
 #include <QSettings>
+#include <QWaitCondition>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QThreadPool>
+#include "asfx.h"
 
 namespace Ui {
     class KV58FirmwareDlg;
@@ -39,9 +44,12 @@ class KV58FirmwareDlg : public QDialog
 
 public:
     explicit KV58FirmwareDlg(QSerialPort* com, QWidget *parent = nullptr);
-    ~KV58FirmwareDlg();
+    virtual ~KV58FirmwareDlg();
     void readReady(const QByteArray data);
+
 private slots:
+    void SendToDevice(QByteArray data);
+
     void on_pbClose_clicked();
 
     void on_pbDownload_clicked();
@@ -58,13 +66,24 @@ private slots:
 
     void on_pbVersion_clicked();
 
+signals:
+    void sendToDevice(QByteArray data);
+
 private:
     Ui::KV58FirmwareDlg *ui;
     QPointer<QSerialPort> m_com;
     bool m_bScroll { true };
+    bool m_bDownloadInProgress { false };
+    QByteArray m_data;
 
     inline void Send(const char* msg);
     inline void Send(const QString &msg);
+
+    QMutex m_firmwareDownloadLock;
+    QWaitCondition m_firmwareDownloadWait;
+
+    class FirmwareDownloadTask;
+    friend class FirmwareDownloadTask;
 };
 
 #endif // KV58FIRMWAREDLG_H

@@ -167,7 +167,7 @@ void UDPConn::readPendingSvcDatagrams()
     {
         while (m_pSvcSocket->hasPendingDatagrams())
         {
-            int size = m_pSvcSocket->pendingDatagramSize();            
+            int size = m_pSvcSocket->pendingDatagramSize();
             if (size > 0)
             {
                 static QByteArray datagram;

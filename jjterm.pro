@@ -35,6 +35,7 @@ SOURCES += \
         udpconn.cpp
 
 HEADERS += \
+        asfx.h \
         asgraph.h \
         console.h \
         dialog.h \

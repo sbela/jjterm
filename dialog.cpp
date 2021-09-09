@@ -113,7 +113,7 @@ void Dialog::readyRead()
     QMutexLocker lock(&m_mutex);
     if (m_firmware->isVisible())
     {
-        m_firmware->readReady(std::move(m_serial->readAll()));
+        m_firmware->readReady(m_serial->readAll());
         return;
     }
 
@@ -186,7 +186,7 @@ void Dialog::on_btOpen_clicked()
         if (ui->btOpen->text() == "Connect")
         {
             m_serial->setPortName(ui->cbPorts->currentText());
-            m_serial->setBaudRate(QSerialPort::Baud115200);
+            m_serial->setBaudRate(115200);
             m_serial->setDataBits(QSerialPort::Data8);
             m_serial->setParity(QSerialPort::NoParity);
             m_serial->setStopBits(QSerialPort::OneStop);
