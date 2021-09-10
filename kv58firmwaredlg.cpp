@@ -71,6 +71,7 @@ public:
             PRINTF("Device did not respond in time [5000ms]!");
         }
         m_parent->m_bDownloadInProgress = false;
+        m_parent->m_notACKSession = true;
         m_parent->ui->prDownload->setValue(0);
     }
 
@@ -100,6 +101,7 @@ KV58FirmwareDlg::~KV58FirmwareDlg()
 
 void KV58FirmwareDlg::readReady(const QByteArray data)
 {
+    //PRINTF("%s", data.constData());
     if (m_bDownloadInProgress)
     {
         m_data.append(data);
@@ -110,6 +112,7 @@ void KV58FirmwareDlg::readReady(const QByteArray data)
             QMutexLocker m(&m_firmwareDownloadLock);
             ui->prDownload->setValue(0);
             m_firmwareDownloadWait.notify_one();
+            m_notACKSession = false;
         }
         else if (m_data.contains("ACK"))
         {
@@ -120,6 +123,9 @@ void KV58FirmwareDlg::readReady(const QByteArray data)
                 ui->lvCommText->insertPlainText("*");
             m_firmwareDownloadWait.notify_one();
         }
+
+        if (m_notACKSession)
+            ui->lvCommText->insertPlainText(data);
     }
     else
         ui->lvCommText->insertPlainText(data);

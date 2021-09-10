@@ -84,6 +84,7 @@ private:
 
     class FirmwareDownloadTask;
     friend class FirmwareDownloadTask;
+    bool m_notACKSession { true };
 };
 
 #endif // KV58FIRMWAREDLG_H
