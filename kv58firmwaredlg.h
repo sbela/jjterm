@@ -25,14 +25,19 @@
 #define KV58FIRMWAREDLG_H
 
 #include <QDialog>
-#include <QSerialPort>
-#include <QPointer>
-#include <QSettings>
-#include <QWaitCondition>
+#include <QMessageBox>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QPointer>
+#include <QSerialPort>
+#include <QSettings>
 #include <QThreadPool>
+#include <QTimer>
+#include <QWaitCondition>
 #include "asfx.h"
+
+#define FLASH_APP_LENGTH				0x00078000
+#define FLASH_LOADER_LENGTH				0x00010000
 
 namespace Ui {
     class KV58FirmwareDlg;
@@ -48,6 +53,8 @@ public:
     void readReady(const QByteArray data);
 
 private slots:
+    void DownloadTimeout();
+
     void SendToDevice(QByteArray data);
 
     void on_pbClose_clicked();
@@ -65,6 +72,16 @@ private slots:
     void on_pbBootApp_clicked();
 
     void on_pbVersion_clicked();
+
+    void on_pbDownloadBootLoader_clicked();
+
+    void on_pbSizes_clicked();
+
+    void on_pbGetApplication_clicked();
+
+    void on_pbGetROM_clicked();
+
+    void on_pbGetLoader_clicked();
 
 signals:
     void sendToDevice(QByteArray data);
@@ -85,6 +102,10 @@ private:
     class FirmwareDownloadTask;
     friend class FirmwareDownloadTask;
     bool m_notACKSession { true };
+    bool m_downloadSession { false };
+    QTimer m_downloadSessionTimer;
+    int m_downloadSessionTimeout { 1000 };
+    QString m_downloadSessionFileName { "unknown.bin" };
 };
 
 #endif // KV58FIRMWAREDLG_H

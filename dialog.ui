@@ -96,6 +96,9 @@
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_10">
                <property name="text">
@@ -119,6 +122,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label">
                <property name="text">
@@ -142,6 +148,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_2">
                <property name="text">
@@ -165,6 +174,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_3">
                <property name="text">
@@ -188,6 +200,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_4">
                <property name="text">
@@ -211,6 +226,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_5">
                <property name="text">
@@ -234,6 +252,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_6">
                <property name="text">
@@ -257,6 +278,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_7">
                <property name="text">
@@ -280,6 +304,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_8">
                <property name="text">
@@ -303,6 +330,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_11">
+             <property name="leftMargin">
+              <number>5</number>
+             </property>
              <item>
               <widget class="QLabel" name="label_9">
                <property name="text">

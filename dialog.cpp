@@ -193,7 +193,7 @@ void Dialog::on_btOpen_clicked()
             m_serial->setFlowControl(QSerialPort::NoFlowControl);
             if (m_serial->open(QIODevice::ReadWrite))
             {
-                ui->lvTexts->insertPlainText("Connected to : " + ui->cbPorts->currentText());
+                ui->lvTexts->insertPlainText("\nConnected to : " + ui->cbPorts->currentText());
                 if (m_bScroll)
                     ui->lvTexts->scrollToBottom();
                 ui->btOpen->setText("Disconnect");
@@ -221,7 +221,7 @@ void Dialog::on_btOpen_clicked()
             if (m_serial->isOpen())
             {
                 m_serial->close();
-                ui->lvTexts->insertPlainText("Disconnected from : " + ui->cbPorts->currentText());
+                ui->lvTexts->insertPlainText("\nDisconnected from : " + ui->cbPorts->currentText());
                 if (m_bScroll) ui->lvTexts->scrollToBottom();
             }
         }

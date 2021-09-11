@@ -30,20 +30,22 @@
 class KV58FirmwareDlg::FirmwareDownloadTask final : public QRunnable
 {
 public:
-    explicit FirmwareDownloadTask(KV58FirmwareDlg *parent, QByteArray bin)
+    explicit FirmwareDownloadTask(KV58FirmwareDlg *parent, QByteArray bin, bool firmwareOrLoader)
         : m_parent(parent),
-          m_bin(std::move(bin))
+          m_bin(std::move(bin)),
+          m_firmwareOrLoader(firmwareOrLoader)
     { }
 
     virtual void run() override
     {
         PRINTF("Firmware download start...");
+        m_parent->m_data.clear();
         m_parent->m_bDownloadInProgress = true;
         int index = 0, len = SEND_LEN;
         PRINT("Sending file [%s] length %d!", m_parent->ui->lbPath->text().toUtf8().constData(), m_bin.length());
         m_parent->ui->prDownload->setMaximum(m_bin.length());
         m_parent->m_firmwareDownloadLock.lock();
-        emit m_parent->sendToDevice(QString("firm:%1\n").arg(m_bin.length()).toUtf8());
+        emit m_parent->sendToDevice(QString("%1:%2\n").arg(m_firmwareOrLoader ? "firm" : "load").arg(m_bin.length()).toUtf8());
         PRINTF("Firmware waiting for sending...");
         if (m_parent->m_firmwareDownloadWait.wait(&m_parent->m_firmwareDownloadLock, QDeadlineTimer(5000)))
         {
@@ -78,6 +80,7 @@ public:
 private:
     KV58FirmwareDlg *m_parent { nullptr };
     QByteArray m_bin;
+    bool m_firmwareOrLoader;
 };
 
 KV58FirmwareDlg::KV58FirmwareDlg(QSerialPort* com, QWidget *parent) :
@@ -90,6 +93,7 @@ KV58FirmwareDlg::KV58FirmwareDlg(QSerialPort* com, QWidget *parent) :
     ui->lbPath->setText(s.value("FirmwarePath").toString());
     ui->lbPath->setToolTip(s.value("FirmwarePath").toString());
     connect(this, SIGNAL(sendToDevice(QByteArray)), this, SLOT(SendToDevice(QByteArray)), Qt::QueuedConnection);
+    connect(&m_downloadSessionTimer, SIGNAL(timeout()), this, SLOT(DownloadTimeout()));
 }
 
 KV58FirmwareDlg::~KV58FirmwareDlg()
@@ -107,7 +111,7 @@ void KV58FirmwareDlg::readReady(const QByteArray data)
         m_data.append(data);
         if (m_data.contains("FIRMWARE-START:"))
         {
-            ui->lvCommText->insertPlainText(m_data);
+            ui->lvCommText->insertPlainText(data);
             m_data.clear();
             QMutexLocker m(&m_firmwareDownloadLock);
             ui->prDownload->setValue(0);
@@ -117,6 +121,12 @@ void KV58FirmwareDlg::readReady(const QByteArray data)
         else if (m_data.contains("ACK"))
         {
             m_data.remove(m_data.indexOf("ACK"), strlen("ACK"));
+            if (m_data.length())
+            {
+                ui->lvCommText->insertPlainText("[");
+                ui->lvCommText->insertPlainText(m_data);
+                ui->lvCommText->insertPlainText("]");
+            }
             QMutexLocker m(&m_firmwareDownloadLock);
             ui->prDownload->setValue(ui->prDownload->value() + SEND_LEN);
             if (ui->prDownload->value() % 10240 == 0)
@@ -128,8 +138,35 @@ void KV58FirmwareDlg::readReady(const QByteArray data)
             ui->lvCommText->insertPlainText(data);
     }
     else
-        ui->lvCommText->insertPlainText(data);
+    {
+        if (m_downloadSession)
+        {
+            m_data.append(data);
+            ui->lvCommText->insertPlainText("*");
+            m_downloadSessionTimer.start(m_downloadSessionTimeout);
+        }
+        else if (data.contains('\0'))
+        {
+            QList<QByteArray> ls = data.split('\0');
+            ui->lvCommText->insertPlainText(ls.join());
+        }
+        else
+            ui->lvCommText->insertPlainText(data);
+    }
     if (m_bScroll) ui->lvCommText->scrollToBottom();
+}
+
+void KV58FirmwareDlg::DownloadTimeout()
+{
+    m_downloadSessionTimer.stop();
+    m_downloadSession = false;
+    ui->lvCommText->insertPlainText("\nReceive Timeout!");
+    if (m_bScroll) ui->lvCommText->scrollToBottom();
+    QFile file(m_downloadSessionFileName);
+    if (file.open(QIODevice::WriteOnly))
+    {
+        file.write(m_data);
+    }
 }
 
 void KV58FirmwareDlg::SendToDevice(QByteArray data)
@@ -151,7 +188,12 @@ void KV58FirmwareDlg::on_pbDownload_clicked()
         if (file.open(QIODevice::ReadOnly))
         {
             if (m_com)
-                QThreadPool::globalInstance()->start(new FirmwareDownloadTask(this, file.readAll()));
+            {
+                if ((file.size() > 0) and (file.size() <= FLASH_APP_LENGTH))
+                    QThreadPool::globalInstance()->start(new FirmwareDownloadTask(this, file.readAll(), true));
+                else
+                    QMessageBox::information(this, QStringLiteral("Error"), QString("Invalid file size! [%1] (max:%2)").arg(file.size()).arg(FLASH_APP_LENGTH));
+            }
             else
                 PRINT("COM is not open!");
         }
@@ -222,4 +264,63 @@ void KV58FirmwareDlg::Send(const QString &msg)
 {
     if (m_com)
         m_com->write(msg.toUtf8());
+}
+
+void KV58FirmwareDlg::on_pbDownloadBootLoader_clicked()
+{
+    if (QFile::exists(ui->lbPath->text()))
+    {
+        QFile file(ui->lbPath->text());
+        if (file.open(QIODevice::ReadOnly))
+        {
+            if (m_com)
+            {
+                if ((file.size() > 0) and (file.size() <= FLASH_LOADER_LENGTH))
+                    QThreadPool::globalInstance()->start(new FirmwareDownloadTask(this, file.readAll(), false));
+                else
+                    QMessageBox::information(this, QStringLiteral("Error"), QString("Invalid file size! [%1] (max:%2)").arg(file.size()).arg(FLASH_LOADER_LENGTH));
+            }
+            else
+                PRINT("COM is not open!");
+        }
+        else
+            PRINT("Can not open file: [%s]", ui->lbPath->text().toUtf8().constData());
+    }
+    else
+        PRINT("File not exists[%s]", ui->lbPath->text().toUtf8().constData());
+}
+
+void KV58FirmwareDlg::on_pbSizes_clicked()
+{
+    Send("size\n");
+}
+
+void KV58FirmwareDlg::on_pbGetApplication_clicked()
+{
+    m_downloadSession = true;
+    m_data.clear();
+    ui->lvCommText->insertPlainText("\nAPP:");
+    if (m_bScroll) ui->lvCommText->scrollToBottom();
+    m_downloadSessionTimer.start(m_downloadSessionTimeout);
+    Send("getfirm\n");
+}
+
+void KV58FirmwareDlg::on_pbGetROM_clicked()
+{
+    m_downloadSession = true;
+    m_data.clear();
+    ui->lvCommText->insertPlainText("\nROM:");
+    if (m_bScroll) ui->lvCommText->scrollToBottom();
+    m_downloadSessionTimer.start(m_downloadSessionTimeout);
+    Send("getrom\n");
+}
+
+void KV58FirmwareDlg::on_pbGetLoader_clicked()
+{
+    m_downloadSession = true;
+    m_data.clear();
+    ui->lvCommText->insertPlainText("\nLDR:");
+    if (m_bScroll) ui->lvCommText->scrollToBottom();
+    m_downloadSessionTimer.start(m_downloadSessionTimeout);
+    Send("getload\n");
 }
