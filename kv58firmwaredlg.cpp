@@ -24,6 +24,7 @@
 #include "kv58firmwaredlg.h"
 #include "ui_kv58firmwaredlg.h"
 #include <QFileDialog>
+#include <QDebug>
 
 #define SEND_LEN  256
 
@@ -160,13 +161,52 @@ void KV58FirmwareDlg::DownloadTimeout()
 {
     m_downloadSessionTimer.stop();
     m_downloadSession = false;
-    ui->lvCommText->insertPlainText("\nReceive Timeout!");
-    if (m_bScroll) ui->lvCommText->scrollToBottom();
     QFile file(m_downloadSessionFileName);
     if (file.open(QIODevice::WriteOnly))
     {
-        file.write(m_data);
+        if (m_data.contains("SEND:"))
+        {
+            int send_length = QString("SEND:").length();
+            int index = m_data.indexOf("SEND:");
+            PRINTF("index:%d", index);
+            int lastIndex = m_data.indexOf(":", index  + send_length + 1);
+            PRINTF("lastIndex:%d", lastIndex);
+            QByteArray len = m_data.mid(index + send_length, lastIndex - (index + send_length));
+            PRINTF("len:%s", len.constData());
+            int length = len.toInt();
+            PRINTF("length:%d", length);
+            int max_length = m_receivingLoader ? FLASH_LOADER_LENGTH : FLASH_APP_LENGTH;
+            PRINTF("max_length:%d", max_length);
+            if ((length > 0) and (length <= max_length))
+            {
+                int data_length = m_data.length() - lastIndex - 1;
+                PRINTF("data_length:%d", data_length);
+                if (data_length == length)
+                {
+                    file.write(m_data.mid(lastIndex + 1));
+                    ui->lvCommText->insertPlainText(QString("\nReceived data! Saved to [%1][%2 byte]").arg(m_downloadSessionFileName).arg(length));
+                }
+                else
+                {
+                    file.write(m_data);
+                    ui->lvCommText->insertPlainText(QString("\nReceived data with invalid length [%1 != %2(data_length)]!\nSaved to [%1]").arg(length).arg(data_length).arg(m_downloadSessionFileName));
+                }
+            }
+            else
+            {
+                file.write(m_data);
+                ui->lvCommText->insertPlainText(QString("\nReceived data with invalid length [%1 != %2(max_length)]!\nSaved to [%3]").arg(length).arg(max_length).arg(m_downloadSessionFileName));
+            }
+        }
+        else
+        {
+            file.write(m_data);
+            ui->lvCommText->insertPlainText(QString("\nReceived invalid data! Saved to [%1]").arg(m_downloadSessionFileName));
+        }
     }
+
+    if (m_bScroll) ui->lvCommText->scrollToBottom();
+    m_data.clear();
 }
 
 void KV58FirmwareDlg::SendToDevice(QByteArray data)
@@ -226,7 +266,6 @@ void KV58FirmwareDlg::on_pbStopScrollCommText_clicked()
 void KV58FirmwareDlg::on_pbFirmwarePath_clicked()
 {
     QSettings s("jjterm.ini", QSettings::IniFormat);
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     QString fileName = QFileDialog::getOpenFileName(this, ("Select the .bin file!"),
                                                     s.value("FirmwarePath", QDir::currentPath()).toString(), tr("Bin files (*.bin)"));
     if (QFile::exists(fileName))
@@ -236,7 +275,6 @@ void KV58FirmwareDlg::on_pbFirmwarePath_clicked()
         ui->lbPath->setText(path);
         ui->lbPath->setToolTip(path);
     }
-    QApplication::setOverrideCursor(QCursor(Qt::ArrowCursor));
 }
 
 void KV58FirmwareDlg::on_pbReboot_clicked()
@@ -297,30 +335,81 @@ void KV58FirmwareDlg::on_pbSizes_clicked()
 
 void KV58FirmwareDlg::on_pbGetApplication_clicked()
 {
-    m_downloadSession = true;
-    m_data.clear();
-    ui->lvCommText->insertPlainText("\nAPP:");
-    if (m_bScroll) ui->lvCommText->scrollToBottom();
-    m_downloadSessionTimer.start(m_downloadSessionTimeout);
-    Send("getfirm\n");
+    QSettings s("jjterm.ini", QSettings::IniFormat);
+    QString fileName = QFileDialog::getSaveFileName(this, ("Set the save .bin file name!"),
+                                                    s.value("FirmwareAppPath", QDir::currentPath()).toString(),
+                                                    tr("Bin files (*.bin)"), nullptr, QFileDialog::DontConfirmOverwrite);
+    if (fileName.length())
+    {
+        QString path = QFileInfo(fileName).absoluteFilePath();
+        if (QFile::exists(path))
+        {
+            if (QMessageBox::question(this, "Overwrite ?", QString("File exists ?\n[%1]\nOverwrite ?").arg(path)) == QMessageBox::No)
+                return;
+        }
+
+        s.setValue("FirmwareAppPath", path);
+        m_downloadSessionFileName = path;
+        m_downloadSession = true;
+        m_data.clear();
+        ui->lvCommText->insertPlainText("\nAPP:");
+        if (m_bScroll) ui->lvCommText->scrollToBottom();
+        m_downloadSessionTimer.start(m_downloadSessionTimeout);
+        m_receivingLoader = false;
+        Send("getfirm\n");
+    }
 }
 
 void KV58FirmwareDlg::on_pbGetROM_clicked()
 {
-    m_downloadSession = true;
-    m_data.clear();
-    ui->lvCommText->insertPlainText("\nROM:");
-    if (m_bScroll) ui->lvCommText->scrollToBottom();
-    m_downloadSessionTimer.start(m_downloadSessionTimeout);
-    Send("getrom\n");
+    QSettings s("jjterm.ini", QSettings::IniFormat);
+    QString fileName = QFileDialog::getSaveFileName(this, ("Set the save .bin file name!"),
+                                                    s.value("FirmwareROMPath", QDir::currentPath()).toString(),
+                                                    tr("Bin files (*.bin)"), nullptr, QFileDialog::DontConfirmOverwrite);
+    if (fileName.length())
+    {
+        QString path = QFileInfo(fileName).absoluteFilePath();
+        if (QFile::exists(path))
+        {
+            if (QMessageBox::question(this, "Overwrite ?", QString("File exists ?\n[%1]\nOverwrite ?").arg(path)) == QMessageBox::No)
+                return;
+        }
+
+        s.setValue("FirmwareROMPath", path);
+        m_downloadSessionFileName = path;
+        m_downloadSession = true;
+        m_data.clear();
+        ui->lvCommText->insertPlainText("\nROM:");
+        if (m_bScroll) ui->lvCommText->scrollToBottom();
+        m_downloadSessionTimer.start(m_downloadSessionTimeout);
+        m_receivingLoader = false;
+        Send("getrom\n");
+    }
 }
 
 void KV58FirmwareDlg::on_pbGetLoader_clicked()
 {
-    m_downloadSession = true;
-    m_data.clear();
-    ui->lvCommText->insertPlainText("\nLDR:");
-    if (m_bScroll) ui->lvCommText->scrollToBottom();
-    m_downloadSessionTimer.start(m_downloadSessionTimeout);
-    Send("getload\n");
+    QSettings s("jjterm.ini", QSettings::IniFormat);
+    QString fileName = QFileDialog::getSaveFileName(this, ("Set the save .bin file name!"),
+                                                    s.value("FirmwareROMPath", QDir::currentPath()).toString(),
+                                                    tr("Bin files (*.bin)"), nullptr, QFileDialog::DontConfirmOverwrite);
+    if (fileName.length())
+    {
+        QString path = QFileInfo(fileName).absoluteFilePath();
+        if (QFile::exists(path))
+        {
+            if (QMessageBox::question(this, "Overwrite ?", QString("File exists ?\n[%1]\nOverwrite ?").arg(path)) == QMessageBox::No)
+                return;
+        }
+
+        s.setValue("FirmwareROMPath", path);
+        m_downloadSessionFileName = path;
+        m_downloadSession = true;
+        m_data.clear();
+        ui->lvCommText->insertPlainText("\nLDR:");
+        if (m_bScroll) ui->lvCommText->scrollToBottom();
+        m_downloadSessionTimer.start(m_downloadSessionTimeout);
+        m_receivingLoader = true;
+        Send("getload\n");
+    }
 }

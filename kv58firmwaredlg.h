@@ -106,6 +106,7 @@ private:
     QTimer m_downloadSessionTimer;
     int m_downloadSessionTimeout { 1000 };
     QString m_downloadSessionFileName { "unknown.bin" };
+    bool m_receivingLoader { false };
 };
 
 #endif // KV58FIRMWAREDLG_H
